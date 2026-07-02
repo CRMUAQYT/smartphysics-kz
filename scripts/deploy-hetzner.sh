@@ -42,12 +42,13 @@ fi
 if [ ! -f .env.prod ]; then
   echo "▶ Generating .env.prod with random secrets..."
   ADMIN_PASSWORD="${ADMIN_PASSWORD_ARG:-SmartPhysics2026!}"
+  GH_USER_LC="$(echo "$GH_USER" | tr '[:upper:]' '[:lower:]')" # github.io origin is lowercase
   cat > .env.prod <<EOF
 API_DOMAIN=${API_DOMAIN}
 DB_PASSWORD=$(openssl rand -hex 16)
 JWT_ACCESS_SECRET=$(openssl rand -hex 32)
 JWT_REFRESH_SECRET=$(openssl rand -hex 32)
-CLIENT_URL=https://${GH_USER}.github.io
+CLIENT_URL=https://${GH_USER_LC}.github.io
 ADMIN_EMAIL=gggsayat2004@gmail.com
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 ADMIN_NAME=Сайат Админ
