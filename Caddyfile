@@ -1,0 +1,14 @@
+# Caddy automatically obtains and renews a Let's Encrypt certificate for
+# {$API_DOMAIN} (e.g. 178-105-152-178.sslip.io), which resolves to this server.
+# All traffic is reverse-proxied to the backend container on port 4000.
+
+{$API_DOMAIN} {
+	encode gzip
+
+	# Allow larger uploads (cover images)
+	request_body {
+		max_size 5MB
+	}
+
+	reverse_proxy server:4000
+}

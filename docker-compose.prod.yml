@@ -1,0 +1,70 @@
+# Production stack for the Hetzner server.
+# Backend is served over HTTPS by Caddy (automatic Let's Encrypt certificate for
+# the sslip.io hostname that resolves to this server's IP). The frontend lives on
+# GitHub Pages and talks to https://<sslip-host>/api.
+#
+# Usage on the server:
+#   cp .env.prod.example .env.prod   # then edit the secrets
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smartphysics
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: smartphysics
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U smartphysics']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ./server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://smartphysics:${DB_PASSWORD}@db:5432/smartphysics?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      ACCESS_TOKEN_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      PORT: 4000
+      NODE_ENV: production
+      CLIENT_URL: ${CLIENT_URL}
+      UPLOAD_DIR: uploads
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME}
+    volumes:
+      - uploads:/app/uploads
+    expose:
+      - '4000' # internal only — reachable through Caddy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

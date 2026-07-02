@@ -1,0 +1,57 @@
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Repo name → base path for the Pages project site
+      VITE_BASE: /smartphysics-kz/
+      # Public HTTPS URL of the backend on the Hetzner server (Caddy + sslip.io)
+      VITE_API_URL: https://178-105-152-178.sslip.io/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install client deps
+        working-directory: client
+        run: npm install
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
+
+      # SPA fallback: copy index.html to 404.html so deep links resolve
+      - name: SPA 404 fallback
+        run: cp client/dist/index.html client/dist/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

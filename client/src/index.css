@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-white/5;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-slate-100 font-sans antialiased;
+    background-image:
+      radial-gradient(circle at 15% -10%, rgba(40, 100, 220, 0.18), transparent 45%),
+      radial-gradient(circle at 85% 5%, rgba(19, 181, 234, 0.12), transparent 40%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-primary/30 text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background-secondary;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-card backdrop-blur-xl shadow-card;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-primary-soft to-secondary bg-clip-text text-transparent;
+  }
+
+  .btn-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* rich-text rendering */
+  .prose-physics {
+    @apply text-slate-300 leading-relaxed;
+  }
+  .prose-physics h3 {
+    @apply text-xl font-semibold text-white mt-6 mb-2;
+  }
+  .prose-physics p {
+    @apply my-3;
+  }
+  .prose-physics ul {
+    @apply list-disc pl-6 my-3 space-y-1;
+  }
+  .prose-physics ol {
+    @apply list-decimal pl-6 my-3 space-y-1;
+  }
+  .prose-physics blockquote {
+    @apply border-l-4 border-primary/60 pl-4 italic text-primary-soft my-4;
+  }
+  .prose-physics a {
+    @apply text-primary underline;
+  }
+  .prose-physics strong {
+    @apply text-white font-semibold;
+  }
+  .prose-physics code {
+    @apply rounded bg-white/10 px-1.5 py-0.5 text-sm text-accent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

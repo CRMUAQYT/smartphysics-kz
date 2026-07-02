@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Select-Object ProcessId, @{n='Cmd';e={$_.CommandLine.Substring\\(0,[Math]::Min\\(110,$_.CommandLine.Length\\)\\)}} | Format-Table -AutoSize -Wrap)"
+    ]
+  }
+}

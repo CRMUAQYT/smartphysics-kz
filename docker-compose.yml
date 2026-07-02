@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: smartphysics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smartphysics
+      POSTGRES_PASSWORD: smartphysics
+      POSTGRES_DB: smartphysics
+    ports:
+      # Host port 5433 to avoid clashing with any local Postgres on 5432
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartphysics"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ./server
+    container_name: smartphysics-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://smartphysics:smartphysics@db:5432/smartphysics?schema=public
+      JWT_ACCESS_SECRET: docker_access_secret_change_me_32_characters_min
+      JWT_REFRESH_SECRET: docker_refresh_secret_change_me_32_characters_min
+      ACCESS_TOKEN_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      PORT: 4000
+      NODE_ENV: production
+      CLIENT_URL: http://localhost:5173
+      UPLOAD_DIR: uploads
+    ports:
+      - "4000:4000"
+    volumes:
+      - uploads:/app/uploads
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: http://localhost:4000/api
+    container_name: smartphysics-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:
+  uploads:
